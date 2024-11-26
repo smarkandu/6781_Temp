@@ -3,6 +3,9 @@ import pandas as pd
 import re
 from nltk.corpus import stopwords
 import nltk
+import torch
+
+torch.manual_seed(0)
 
 nltk.download('stopwords')
 
@@ -69,3 +72,75 @@ def vocab_dictionary(df):
                 vocab[word] = vocab.get(word, 0) + 1
 
     return vocab
+
+
+def word_to_index(vocabulary):
+    """ Method to create vocabulary to index mapping.
+    Arguments
+    ---------
+    vocabulary : Dictionary
+       Dictonary of format {word:frequency}
+    Returns
+    -------
+    word_to_index : Dictionary
+        Dictionary mapping words to index with format {word:index}
+    """
+    # Create key,value pair for out of vocabulary worlds
+    # TODO
+    return_value = {'<OOV>': 0}
+    for index, word in enumerate(vocabulary, start=1):
+        return_value[word] = index
+
+    return return_value
+
+
+def save_at_checkpoint(model, optimizer, loss, filename, epoch_number):
+    checkpoint = {
+        'epoch': epoch_number,
+        'model_state_dict': model.state_dict(),
+        'optimizer_state_dict': optimizer.state_dict(),
+        'loss': loss
+    }
+    print(f"Saving training from epoch {epoch_number} using file {filename}")
+    torch.save(checkpoint, filename)
+
+
+def load_at_checkpoint(filename, model, optimizer):
+    checkpoint = torch.load(filename)
+    model.load_state_dict(checkpoint['model_state_dict'])
+    optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+    epoch = checkpoint['epoch']
+    print(f"Continuing training from epoch {epoch} using file {filename}")
+    return epoch
+
+def generate_dataset(data, window_size,word_to_index):
+  """ Method to generate training dataset for CBOW.
+  Arguments
+  ---------
+  data : String
+     Training dataset
+  window_size : int
+     Size of the context window
+  word_to_index : Dictionary
+     Dictionary mapping words to index with format {word:index}
+  Returns
+  -------
+  surroundings : N x W Tensor
+      Tensor with index of surrounding words, with N being the number of samples and W being the window size
+  targets : Tensor
+      Tensor with index of target word
+  """
+  surroundings= []
+  targets = []
+  data= data.split(" ")
+  #TODO complete function
+  for i in range(window_size,len(data)-window_size):
+    surrounding =  [word_to_index[surrounding_word] for surrounding_word in data[i - window_size: i] + data[i + 1: i + window_size + 1]]  #get surrounding words based on window size
+    target = word_to_index[data[i]] #get target word (middle word)
+    surroundings.append(surrounding) #append to surrounding
+    targets.append(target) #append to targets
+
+  surroundings = torch.tensor(surroundings)
+  targets = torch.tensor(targets)
+
+  return surroundings, targets
