@@ -40,8 +40,8 @@ if __name__ == '__main__':
     for i in range(0, df_test.shape[0]):
         predicted_sentiment, sentiment_scores = classify_review(df_test.iloc[i]['text'], likelihood,
                                                                 positive_prior, negative_prior)
-        print(predicted_sentiment)
-        print(sentiment_scores)
+        # print(predicted_sentiment)
+        # print(sentiment_scores)
         if predicted_sentiment == df_test.iloc[i]['label']:
             num_correct += 1
 
