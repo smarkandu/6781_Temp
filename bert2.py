@@ -33,12 +33,13 @@ model = model_class.from_pretrained(pretrained_weights)
 
 tokenized = df_complete[0].apply((lambda x: tokenizer.encode(x, add_special_tokens=True)))
 
+# Find the maximum length
 max_len = 0
 for i in tokenized.values:
     if len(i) > max_len:
         max_len = len(i)
 
-# Pad the values
+# Pad the values for those less than the maximum length
 padded = np.array([i + [0]*(max_len-len(i)) for i in tokenized.values])
 print(tokenized.values[0])
 print(np.array(padded).shape)
