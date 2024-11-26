@@ -26,8 +26,8 @@ if __name__ == '__main__':
 
     positive_prior = len(df_train[df_train['label'] == 1]) / len(df_train)  # calculate positive prior
     negative_prior = len(df_train[df_train['label'] == 0]) / len(df_train)  # calculate negative prior
-    print(positive_prior)
-    print(negative_prior)
+    # print(positive_prior)
+    # print(negative_prior)
 
     likelihood = calculate_log_likelihood(full_vocab, positive_vocab, negative_vocab)
 
