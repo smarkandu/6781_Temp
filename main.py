@@ -15,14 +15,14 @@ if __name__ == '__main__':
     df_train, df_test = train_test_split(df_overall, test_size=0.2, random_state=42)
 
     full_vocab = vocab_dictionary(df_train)
-    print(len(full_vocab))
+    # print(len(full_vocab))
     positive_vocab = vocab_dictionary(df_train[df_train[
                                                    'label'] == 1])  # We create a positive vocab to keep track of words in positive reviews. This will come in handy later
     negative_vocab = vocab_dictionary(df_train[df_train[
                                                    'label'] == 0])  # We create a negative vocab to keep track of words in negative reviews. This will come in handy later
-    print(len(positive_vocab))
-    print(len(negative_vocab))
-    print(df_train.head())
+    # print(len(positive_vocab))
+    # print(len(negative_vocab))
+    # print(df_train.head())
 
     positive_prior = len(df_train[df_train['label'] == 1]) / len(df_train)  # calculate positive prior
     negative_prior = len(df_train[df_train['label'] == 0]) / len(df_train)  # calculate negative prior
