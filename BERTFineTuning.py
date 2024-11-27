@@ -77,7 +77,12 @@ class BERTFineTuning:
                 # Forward pass
                 outputs = self.model(input_ids, attention_mask=attention_mask)
                 last_hidden_states = outputs.last_hidden_state
-                logits = last_hidden_states[:, 0, :].to(torch.float32)  # Ensure logits are float32
+
+                # Ensure logits are float32
+                logits = last_hidden_states[:, 0, :].float()  # Convert to float32
+
+                # Ensure labels are long (int64)
+                labels = labels.to(torch.long)  # Ensure labels are long
 
                 # Compute the loss
                 loss = self.loss_fn(logits, labels)
