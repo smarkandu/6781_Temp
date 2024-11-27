@@ -1,7 +1,8 @@
-import numpy as np
 import math
+import numpy as np
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split
+import re
 
 from data_collection import get_data2
 
@@ -12,6 +13,25 @@ class TFIDFLinearRegression:
         self.idf = None
         self.model = LinearRegression()
 
+    @staticmethod
+    def preprocess(text):
+        """
+        Preprocess the input text by cleaning and normalizing it.
+
+        Parameters:
+        text (str): The input text document.
+
+        Returns:
+        str: The cleaned and preprocessed text.
+        """
+        # Convert to lowercase
+        text = text.lower()
+        # Remove non-alphanumeric characters
+        text = re.sub(r'[^a-z0-9\s]', '', text)
+        # Remove extra whitespace
+        text = re.sub(r'\s+', ' ', text).strip()
+        return text
+
     def fit(self, documents, y):
         """
         Train the model using the given documents and target values.
@@ -20,6 +40,9 @@ class TFIDFLinearRegression:
         documents (list of str): The list of text documents.
         y (numpy array): The target variable for each document.
         """
+        # Step 0: Preprocess text
+        documents = [self.preprocess(doc) for doc in documents]
+
         # Step 1: Build vocabulary
         self.vocabulary = list(set(' '.join(documents).split()))
 
@@ -37,6 +60,8 @@ class TFIDFLinearRegression:
         self.model.fit(X_train, y_train)
 
         print(f"Model trained with {len(documents)} documents.")
+        print(f"R² on training data: {self.model.score(X_train, y_train):.4f}")
+        print(f"R² on test data: {self.model.score(X_test, y_test):.4f}")
 
     def compute_tf(self, doc):
         """
@@ -69,7 +94,7 @@ class TFIDFLinearRegression:
         N = len(documents)
         for word in self.vocabulary:
             df = sum(1 for doc in documents if word in doc)
-            idf[word] = math.log(N / (df + 1)) + 1  # add 1 to prevent division by zero
+            idf[word] = math.log(N / (df + 1)) + 1  # Add 1 to prevent division by zero
         return idf
 
     def compute_tfidf(self, tf_matrix):
@@ -98,35 +123,24 @@ class TFIDFLinearRegression:
         Returns:
         numpy array: Predicted values.
         """
+        # Preprocess the input documents
+        documents = [self.preprocess(doc) for doc in documents]
         tf_matrix = [self.compute_tf(doc) for doc in documents]
         tfidf_matrix = self.compute_tfidf(tf_matrix)
         return self.model.predict(tfidf_matrix)
 
-    def evaluate(self, X_test, y_test):
-        """
-        Evaluate the model's performance using test data.
-
-        Parameters:
-        X_test (numpy array): The test features (TF-IDF).
-        y_test (numpy array): The actual target values.
-
-        Returns:
-        float: The R^2 score of the model.
-        """
-        return self.model.score(X_test, y_test)
-
 
 # Example usage:
-full_vocab, human_vocab, chatgpt_vocab, df_train, df_test = get_data2()
-
-
+# Sample data
 documents = [
-    "this is a sample document",
-    "this document is a sample",
-    "sample document for testing",
-    "testing document example"
+    "This is a sample document.",
+    "This document is another example of a document.",
+    "Sample text for testing.",
+    "Testing documents is essential."
 ]
 y = np.array([1, 0, 1, 0])  # Dummy target for demonstration
+
+full_vocab, human_vocab, chatgpt_vocab, df_train, df_test = get_data2()
 
 # Instantiate the model
 model = TFIDFLinearRegression()
