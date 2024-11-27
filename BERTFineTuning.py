@@ -8,6 +8,7 @@ from data_collection import get_data2
 from sklearn.metrics import classification_report, confusion_matrix
 from torch.utils.data import DataLoader, TensorDataset
 
+
 class BERTFineTuning:
     def __init__(self, model_name='distilbert-base-uncased', epochs=3, lr=1e-5, batch_size=16):
         self.model_name = model_name
@@ -21,8 +22,7 @@ class BERTFineTuning:
         self.loss_fn = None
         self.dataloader = None
 
-    def load_data(self):
-        full_vocab, human_vocab, chatgpt_vocab, df_train, df_test = get_data2()
+    def load_data(self, df_train, df_test):
         self.df_train = df_train
         self.df_test = df_test
         self.df_train.columns = [0, 1]
@@ -134,3 +134,23 @@ class BERTFineTuning:
         # Evaluate overall logistic regression score
         score = lr_clf.score(test_features, test_labels)
         print(f'Logistic Regression Accuracy Score: {score}')
+
+
+def run_BERT(df_train, df_test):
+    bert_finetuning = BERTFineTuning(model_name='distilbert-base-uncased', epochs=3, lr=1e-5)
+
+    # Load data
+    # _, _, _, df_train, df_test = get_data2()
+    bert_finetuning.load_data(df_train, df_test)
+
+    # Initialize model
+    bert_finetuning.initialize_model()
+
+    # Preprocess data
+    bert_finetuning.preprocess_data()
+
+    # Fine-tune the BERT model
+    bert_finetuning.fine_tune_model()
+
+    # Evaluate the model
+    bert_finetuning.evaluate_model()
