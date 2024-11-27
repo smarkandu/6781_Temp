@@ -6,18 +6,20 @@ from torch import nn, optim
 import transformers as ppb
 from data_collection import get_data2
 from sklearn.metrics import classification_report, confusion_matrix
-
+from torch.utils.data import DataLoader, TensorDataset
 
 class BERTFineTuning:
-    def __init__(self, model_name='distilbert-base-uncased', epochs=3, lr=1e-5):
+    def __init__(self, model_name='distilbert-base-uncased', epochs=3, lr=1e-5, batch_size=16):
         self.model_name = model_name
         self.epochs = epochs
         self.lr = lr
+        self.batch_size = batch_size  # Add batch_size parameter
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.tokenizer = None
         self.model = None
         self.optimizer = None
         self.loss_fn = None
+        self.dataloader = None
 
     def load_data(self):
         full_vocab, human_vocab, chatgpt_vocab, df_train, df_test = get_data2()
@@ -56,42 +58,57 @@ class BERTFineTuning:
         # Create attention mask
         attention_mask = (padded != 0).long().to(self.device)
 
-        # Save tensors
-        self.input_ids = padded
-        self.attention_mask = attention_mask
-
-    def fine_tune_model(self):
+        # Create labels tensor
         labels = torch.tensor(self.df_train[1].values, device=self.device)
 
+        # Create a dataset and DataLoader
+        dataset = TensorDataset(padded, attention_mask, labels)
+        self.dataloader = DataLoader(dataset, batch_size=self.batch_size, shuffle=True)
+
+    def fine_tune_model(self):
         for epoch in range(self.epochs):
-            self.optimizer.zero_grad()
+            epoch_loss = 0
+            for batch in self.dataloader:
+                input_ids, attention_mask, labels = batch
 
-            # Forward pass
-            outputs = self.model(self.input_ids, attention_mask=self.attention_mask)
-            last_hidden_states = outputs.last_hidden_state
-            logits = last_hidden_states[:, 0, :]  # [CLS] token representation
+                # Zero the gradients
+                self.optimizer.zero_grad()
 
-            # Compute the loss
-            loss = self.loss_fn(logits, labels)
+                # Forward pass
+                outputs = self.model(input_ids, attention_mask=attention_mask)
+                last_hidden_states = outputs.last_hidden_state
+                logits = last_hidden_states[:, 0, :]  # [CLS] token representation
 
-            # Backward pass
-            loss.backward()
+                # Compute the loss
+                loss = self.loss_fn(logits, labels)
+                epoch_loss += loss.item()
 
-            # Update weights
-            self.optimizer.step()
+                # Backward pass
+                loss.backward()
 
-            print(f"Epoch {epoch + 1}/{self.epochs}, Loss: {loss.item()}")
+                # Update weights
+                self.optimizer.step()
+
+            print(f"Epoch {epoch + 1}/{self.epochs}, Loss: {epoch_loss:.4f}")
 
     def evaluate_model(self):
         # Extract features after fine-tuning
         self.model.eval()
+        features_list, labels_list = [], []
+
         with torch.no_grad():
-            outputs = self.model(self.input_ids, attention_mask=self.attention_mask)
-            last_hidden_states = outputs.last_hidden_state
-            features = last_hidden_states[:, 0, :].cpu().numpy()  # Move to CPU for compatibility with sklearn
+            for batch in self.dataloader:
+                input_ids, attention_mask, labels = batch
+                outputs = self.model(input_ids, attention_mask=attention_mask)
+                last_hidden_states = outputs.last_hidden_state
+                features = last_hidden_states[:, 0, :].cpu().numpy()
+                features_list.extend(features)
+                labels_list.extend(labels.cpu().numpy())
+
+        features = np.array(features_list)
+        labels = np.array(labels_list)
 
         # Prepare data for classification
-        labels = self.df_train[1].values
         train_features, test_features, train_labels, test_labels = train_test_split(features, labels, test_size=0.2)
 
         # Train a Logistic Regression classifier on the features
@@ -117,23 +134,3 @@ class BERTFineTuning:
         # Evaluate overall logistic regression score
         score = lr_clf.score(test_features, test_labels)
         print(f'Logistic Regression Accuracy Score: {score}')
-
-
-# Usage example:
-if __name__ == "__main__":
-    bert_finetuning = BERTFineTuning(model_name='distilbert-base-uncased', epochs=3, lr=1e-5)
-
-    # Load data
-    df_train, df_test = bert_finetuning.load_data()
-
-    # Initialize model
-    bert_finetuning.initialize_model()
-
-    # Preprocess data
-    bert_finetuning.preprocess_data()
-
-    # Fine-tune the BERT model
-    bert_finetuning.fine_tune_model()
-
-    # Evaluate the model
-    bert_finetuning.evaluate_model()
