@@ -10,11 +10,11 @@ import warnings
 warnings.filterwarnings('ignore')
 
 # Get Data
-from utils import convert_files_to_csv
+from utils import convert_text_files_to_df
 
 # Load dataset
-chatgpt_df = convert_files_to_csv("./data/chatgpt", 0)
-human_df = convert_files_to_csv("./data/human", 1)
+chatgpt_df = convert_text_files_to_df("./data/chatgpt", 0)
+human_df = convert_text_files_to_df("./data/human", 1)
 
 # Combine datasets into a single DataFrame
 df_complete = pd.concat([chatgpt_df, human_df], ignore_index=True)
