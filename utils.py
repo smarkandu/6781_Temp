@@ -10,7 +10,7 @@ torch.manual_seed(0)
 nltk.download('stopwords')
 
 
-def convert_files_to_csv(directory, label):
+def convert_text_files_to_df(directory, label):
     data = []
 
     for filename in os.listdir(directory):
