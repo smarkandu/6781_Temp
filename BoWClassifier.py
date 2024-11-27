@@ -3,7 +3,9 @@ from collections import defaultdict
 
 from sklearn.model_selection import train_test_split
 
-from utils import preprocess_text, convert_files_to_csv, vocab_dictionary
+from data_collection import CHATGPT, HUMAN, get_data1, get_data2
+from performance_metrics import get_basic_performance_metrics, print_all_metrics
+from utils import preprocess_text, convert_text_files_to_df, vocab_dictionary
 
 SMOOTHING_FACTOR = 0.2
 
@@ -117,27 +119,13 @@ class BoWClassifier:
             'chatgpt': log_score_chatgpt,
         }
 
-        # Predicted sentiment is based on the higher log score
+        # Predicted classification is based on the higher log score
         predicted_class = 1 if log_score_human > log_score_chatgpt else 0
 
         return predicted_class, classification_scores
 
 if __name__ == '__main__':
-    import pandas as pd
-
-    chatgpt_df = convert_files_to_csv("./data/chatgpt", 0)
-    human_df = convert_files_to_csv("./data/human", 1)
-
-    df_overall = pd.concat([chatgpt_df, human_df], ignore_index=True)
-
-    df_train, df_test = train_test_split(df_overall, test_size=0.2, random_state=42)
-
-    full_vocab = vocab_dictionary(df_train)
-    # print(len(full_vocab))
-    chatgpt_vocab = vocab_dictionary(df_train[df_train[
-                                                  'label'] == 0])
-    human_vocab = vocab_dictionary(df_train[df_train[
-                                                'label'] == 1])
+    full_vocab, human_vocab, chatgpt_vocab, df_train, df_test = get_data2()
 
     classifier = BoWClassifier(smoothing_factor=0.2)
 
@@ -146,20 +134,18 @@ if __name__ == '__main__':
 
     # Classify a new review with known priors for each class
     review = "The weather today is sunny and bright"
-    chatgpt_prior = len(df_train[df_train['label'] == 0]) / len(df_train)  # calculate chatgpt prior
-    human_prior = len(df_train[df_train['label'] == 1]) / len(df_train)  # calculate human prior
+    chatgpt_prior = len(df_train[df_train['label'] == CHATGPT]) / len(df_train)  # calculate chatgpt prior
+    human_prior = len(df_train[df_train['label'] == HUMAN]) / len(df_train)  # calculate human prior
 
-    num_correct = 0
+    predicted_classifications = []
+    target_classifications = df_test['label'].tolist()
     for i in range(0, df_test.shape[0]):
-        predicted_sentiment, sentiment_scores = classifier.classify(df_test.iloc[i]['text'], human_prior, chatgpt_prior)
-        # print(predicted_sentiment)
-        # print(sentiment_scores)
-        if predicted_sentiment == df_test.iloc[i]['label']:
-            num_correct += 1
+        predicted_classification, classification_scores = classifier.classify(df_test.iloc[i]['text'], human_prior, chatgpt_prior)
+        predicted_classifications.append(predicted_classification)
 
-    print(num_correct / df_test.shape[0])
+    TP, FP, TN, FN = get_basic_performance_metrics(predicted_classifications, target_classifications, CHATGPT)
+    print_all_metrics(TP, TN, FP, FN)
 
 
-
-    print("Predicted Sentiment:", "Human" if predicted_sentiment == 1 else "ChatGPT")
-    print("Sentiment Scores:", sentiment_scores)
+    # print("Predicted classification:", "Human" if predicted_classification == 1 else "ChatGPT")
+    # print("classification Scores:", classification_scores)
