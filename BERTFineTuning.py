@@ -5,6 +5,7 @@ from sklearn.linear_model import LogisticRegression
 from torch import nn, optim
 import transformers as ppb
 from data_collection import get_data1
+from sklearn.metrics import classification_report, confusion_matrix
 
 
 class BERTFineTuning:
@@ -86,16 +87,32 @@ class BERTFineTuning:
             features = last_hidden_states[:, 0, :].numpy()
 
         # Prepare data for classification
-        labels = self.df_train[1]
-        train_features, test_features, train_labels, test_labels = train_test_split(features, labels)
+        labels = self.df_train[1].values
+        train_features, test_features, train_labels, test_labels = train_test_split(features, labels, test_size=0.2)
 
         # Train a Logistic Regression classifier on the features
         lr_clf = LogisticRegression()
         lr_clf.fit(train_features, train_labels)
 
-        # Evaluate the classifier
+        # Predict on the test features
+        predictions = lr_clf.predict(test_features)
+
+        # Calculate confusion matrix
+        tn, fp, fn, tp = confusion_matrix(test_labels, predictions).ravel()
+
+        # Print metrics
+        print(f"True Positives (TP): {tp}")
+        print(f"True Negatives (TN): {tn}")
+        print(f"False Positives (FP): {fp}")
+        print(f"False Negatives (FN): {fn}")
+
+        # Calculate accuracy, precision, recall, and F1-score
+        report = classification_report(test_labels, predictions)
+        print("Classification Report:\n", report)
+
+        # Evaluate overall logistic regression score
         score = lr_clf.score(test_features, test_labels)
-        print(f'Logistic Regression Score: {score}')
+        print(f'Logistic Regression Accuracy Score: {score}')
 
 
 # Usage example:
