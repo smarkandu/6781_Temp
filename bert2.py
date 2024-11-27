@@ -8,11 +8,12 @@ import torch
 import transformers as ppb
 import warnings
 
+from data_collection import get_data1
 from data_collection import get_data2
 
 warnings.filterwarnings('ignore')
 
-full_vocab, human_vocab, chatgpt_vocab, df_train, df_test = get_data2()
+full_vocab, human_vocab, chatgpt_vocab, df_train, df_test = get_data1()
 
 # Combine datasets into a single DataFrame
 df_train.columns = [0, 1]
