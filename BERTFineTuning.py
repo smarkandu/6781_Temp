@@ -161,5 +161,7 @@ def run_BERT(df_train, df_test):
     bert_finetuning.evaluate_model()
 
 
-_, _, _, df_train, df_test = data_collection.get_data1()
-BERTFineTuning.run_BERT(df_train, df_test)
+_, _, _, df_train, df_test = data_collection.get_data2()
+df_train = df_train.sample(n=1000, random_state=42)
+df_test = df_test.sample(n=200, random_state=42)
+run_BERT(df_train, df_test)
