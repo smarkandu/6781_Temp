@@ -5,6 +5,7 @@ from sklearn.linear_model import LogisticRegression
 from torch import nn, optim
 import transformers as ppb
 from data_collection import get_data1
+from data_collection import get_data2
 from sklearn.metrics import classification_report, confusion_matrix
 
 
@@ -19,9 +20,12 @@ class BERTFineTuning:
         self.loss_fn = None
 
     def load_data(self):
-        full_vocab, human_vocab, chatgpt_vocab, df_train, df_test = get_data1()
+        full_vocab, human_vocab, chatgpt_vocab, df_train, df_test = get_data2()
         self.df_train = df_train
         self.df_test = df_test
+        self.df_train.columns = [0, 1]
+        self.df_train.columns = [0, 1]
+
         return df_train, df_test
 
     def initialize_model(self):
