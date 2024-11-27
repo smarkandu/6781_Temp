@@ -4,7 +4,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
 from torch import nn, optim
 import transformers as ppb
-from data_collection import get_data2
+import data_collection
 from sklearn.metrics import classification_report, confusion_matrix
 from torch.utils.data import DataLoader, TensorDataset
 
@@ -59,7 +59,7 @@ class BERTFineTuning:
         attention_mask = (padded != 0).long().to(self.device)
 
         # Create labels tensor
-        labels = torch.tensor(self.df_train[1].values, device=self.device)
+        labels = torch.tensor(self.df_train[1].values, dtype=torch.long, device=self.device)
 
         # Create a dataset and DataLoader
         dataset = TensorDataset(padded, attention_mask, labels)
@@ -77,7 +77,7 @@ class BERTFineTuning:
                 # Forward pass
                 outputs = self.model(input_ids, attention_mask=attention_mask)
                 last_hidden_states = outputs.last_hidden_state
-                logits = last_hidden_states[:, 0, :]  # [CLS] token representation
+                logits = last_hidden_states[:, 0, :].float()  # Convert to float32
 
                 # Compute the loss
                 loss = self.loss_fn(logits, labels)
@@ -154,3 +154,7 @@ def run_BERT(df_train, df_test):
 
     # Evaluate the model
     bert_finetuning.evaluate_model()
+
+
+_, _, _, df_train, df_test = data_collection.get_data1()
+BERTFineTuning.run_BERT(df_train, df_test)
