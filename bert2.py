@@ -7,19 +7,16 @@ from sklearn.model_selection import cross_val_score
 import torch
 import transformers as ppb
 import warnings
+
+from data_collection import get_data2
+
 warnings.filterwarnings('ignore')
 
-# Get Data
-from utils import convert_text_files_to_df
-
-# Load dataset
-chatgpt_df = convert_text_files_to_df("./data/chatgpt", 0)
-human_df = convert_text_files_to_df("./data/human", 1)
+full_vocab, human_vocab, chatgpt_vocab, df_train, df_test = get_data2()
 
 # Combine datasets into a single DataFrame
-df_complete = pd.concat([chatgpt_df, human_df], ignore_index=True)
-df_complete.columns = [0, 1]
-print(df_complete.head())
+df_train.columns = [0, 1]
+print(df_train.head())
 
 # For DistilBERT:
 model_class, tokenizer_class, pretrained_weights = (ppb.DistilBertModel, ppb.DistilBertTokenizer, 'distilbert-base-uncased')
@@ -31,7 +28,10 @@ model_class, tokenizer_class, pretrained_weights = (ppb.DistilBertModel, ppb.Dis
 tokenizer = tokenizer_class.from_pretrained(pretrained_weights)
 model = model_class.from_pretrained(pretrained_weights)
 
-tokenized = df_complete[0].apply((lambda x: tokenizer.encode(x, add_special_tokens=True)))
+#tokenized = df_train[0].apply((lambda x: tokenizer.encode(x, add_special_tokens=True)))
+tokenized = df_train[0].apply(lambda x: tokenizer.encode(x, add_special_tokens=True, truncation=True))
+#tokenized = df_train[0].apply(lambda x: tokenizer.encode(x, add_special_tokens=True, truncation=True, padding='max_length', max_length=512))
+
 
 # Find the maximum length
 max_len = 0
@@ -56,7 +56,7 @@ with torch.no_grad():
 
 # Get Labels
 features = last_hidden_states[0][:,0,:].numpy()
-labels = df_complete[1]
+labels = df_train[1]
 
 # Make a Train / Test Split
 train_features, test_features, train_labels, test_labels = train_test_split(features, labels)
