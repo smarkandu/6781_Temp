@@ -50,27 +50,27 @@ def classify_review(text, likelihood, human_prior, chatgpt_prior):
         Prior probability of a review being chatgpt
     Returns
     -------
-    predicted sentiment : string
-        Predicted sentiment of the text
-    sentiment_scores : tuple or dictionary
-        Tuple of human and chatgpt sentiment scores
+    predicted classification : string
+        Predicted classification of the text
+    classification_scores : tuple or dictionary
+        Tuple of human and chatgpt classification scores
     """
     tokens = preprocess_text(text).split()  # # Split the input review
 
     log_score_human = math.log(human_prior)
     log_score_chatgpt = math.log(chatgpt_prior)
 
-    # Calculate the log scores for each sentiment category (take into account value for unseen tokens)
+    # Calculate the log scores for each classification category (take into account value for unseen tokens)
     for token in tokens:
         if token in likelihood:
             log_score_human += likelihood[token]['human']
             log_score_chatgpt += likelihood[token]['chatgpt']
 
-    sentiment_scores = {
+    classification_scores = {
         'human': log_score_human,
         'chatgpt': log_score_chatgpt,
     }
 
-    predicted_sentiment = 1 if log_score_human > log_score_chatgpt else 0  # Determine the predicted sentiment based on the highest sentiment score
+    predicted_classification = 1 if log_score_human > log_score_chatgpt else 0  # Determine the predicted classification based on the highest classification score
 
-    return predicted_sentiment, sentiment_scores
+    return predicted_classification, classification_scores
