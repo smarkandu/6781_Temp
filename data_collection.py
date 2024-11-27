@@ -26,7 +26,7 @@ def get_data1():
 
 
 def get_data2():
-    df_overall = pd.read_csv('./data2/AI_Human.csv')
+    df_overall = pd.read_csv('./data2/AI_Human.csv', on_bad_lines='skip', encoding='utf-8')
     df_overall.columns = ['text', 'label']
 
     df_train, df_test = train_test_split(df_overall, test_size=0.2, random_state=42)
