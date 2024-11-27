@@ -4,7 +4,6 @@ from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
 from torch import nn, optim
 import transformers as ppb
-from data_collection import get_data1
 from data_collection import get_data2
 from sklearn.metrics import classification_report, confusion_matrix
 
@@ -14,6 +13,7 @@ class BERTFineTuning:
         self.model_name = model_name
         self.epochs = epochs
         self.lr = lr
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.tokenizer = None
         self.model = None
         self.optimizer = None
@@ -24,20 +24,20 @@ class BERTFineTuning:
         self.df_train = df_train
         self.df_test = df_test
         self.df_train.columns = [0, 1]
-        self.df_train.columns = [0, 1]
-
+        self.df_test.columns = [0, 1]
         return df_train, df_test
 
     def initialize_model(self):
         model_class, tokenizer_class, pretrained_weights = (
-        ppb.DistilBertModel, ppb.DistilBertTokenizer, 'distilbert-base-uncased')
+            ppb.DistilBertModel, ppb.DistilBertTokenizer, 'distilbert-base-uncased'
+        )
 
         if self.model_name == 'bert-base-uncased':
             model_class, tokenizer_class, pretrained_weights = (ppb.BertModel, ppb.BertTokenizer, 'bert-base-uncased')
 
         self.tokenizer = tokenizer_class.from_pretrained(pretrained_weights)
-        self.model = model_class.from_pretrained(pretrained_weights)
-        self.model.train()  # Set the model in training mode
+        self.model = model_class.from_pretrained(pretrained_weights).to(self.device)  # Move model to GPU
+        self.model.train()
 
         # Optimizer and loss function
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.lr)
@@ -51,28 +51,28 @@ class BERTFineTuning:
         max_len = max([len(x) for x in tokenized])
 
         # Pad sequences to the same length
-        padded = np.array([i + [0] * (max_len - len(i)) for i in tokenized])
+        padded = torch.tensor([i + [0] * (max_len - len(i)) for i in tokenized], device=self.device)
 
         # Create attention mask
-        attention_mask = np.where(padded != 0, 1, 0)
+        attention_mask = (padded != 0).long().to(self.device)
 
-        # Convert to tensors
-        self.input_ids = torch.tensor(padded)
-        self.attention_mask = torch.tensor(attention_mask)
+        # Save tensors
+        self.input_ids = padded
+        self.attention_mask = attention_mask
 
     def fine_tune_model(self):
-        labels = self.df_train[1].values
+        labels = torch.tensor(self.df_train[1].values, device=self.device)
 
         for epoch in range(self.epochs):
             self.optimizer.zero_grad()
 
             # Forward pass
             outputs = self.model(self.input_ids, attention_mask=self.attention_mask)
-            last_hidden_states = outputs[0]  # Get hidden states
+            last_hidden_states = outputs.last_hidden_state
             logits = last_hidden_states[:, 0, :]  # [CLS] token representation
 
             # Compute the loss
-            loss = self.loss_fn(logits, torch.tensor(labels).long())
+            loss = self.loss_fn(logits, labels)
 
             # Backward pass
             loss.backward()
@@ -84,11 +84,11 @@ class BERTFineTuning:
 
     def evaluate_model(self):
         # Extract features after fine-tuning
-        self.model.eval()  # Set the model to evaluation mode
+        self.model.eval()
         with torch.no_grad():
             outputs = self.model(self.input_ids, attention_mask=self.attention_mask)
-            last_hidden_states = outputs[0]
-            features = last_hidden_states[:, 0, :].numpy()
+            last_hidden_states = outputs.last_hidden_state
+            features = last_hidden_states[:, 0, :].cpu().numpy()  # Move to CPU for compatibility with sklearn
 
         # Prepare data for classification
         labels = self.df_train[1].values
