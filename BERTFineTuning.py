@@ -129,7 +129,7 @@ class BERTFineTuning:
         # Print all performance Metrics observed
         print_all_metrics(labels_list, predictions_list)
 
-        return probabilities_list, predictions_list
+        return probabilities_list, predictions_list, labels_list
 
 
 def get_BERT_model(df_train, batch_size_val):
