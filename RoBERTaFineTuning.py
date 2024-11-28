@@ -104,8 +104,9 @@ class RoBERTaFineTuning:
                 predictions_list.extend(predictions)
                 labels_list.extend(labels.cpu().numpy())
 
-        print_all_metrics(labels_list, predictions_list)
+        metrics = print_all_metrics(labels_list, predictions_list)
 
+        return metrics, predictions_list, labels_list
 
 def get_RoBERTa_model(df_train, batch_size_val):
     roberta_finetuning = RoBERTaFineTuning(model_name='roberta-base', epochs=3, lr=1e-5, batch_size=batch_size_val)
