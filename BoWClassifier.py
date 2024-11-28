@@ -126,7 +126,7 @@ class BoWClassifier:
         return predicted_class, classification_scores
 
 
-def run_BoWClassifier(full_vocab, human_vocab, ai_generated_vocab, df_train, df_test):
+def get_model(full_vocab, human_vocab, ai_generated_vocab, df_train):
     classifier = BoWClassifier(smoothing_factor=0.2)
 
     # Train the model with vocabularies for human and ai_generated reviews
@@ -135,6 +135,10 @@ def run_BoWClassifier(full_vocab, human_vocab, ai_generated_vocab, df_train, df_
     # Classify a new review with known priors for each class
     ai_generated_prior = len(df_train[df_train['label'] == AI_GENERATED]) / len(df_train)  # calculate ai_generated prior
     human_prior = len(df_train[df_train['label'] == HUMAN]) / len(df_train)  # calculate human prior
+
+    return classifier, ai_generated_prior, human_prior
+
+def test_model(classifier, human_prior, ai_generated_prior, df_test):
 
     predicted_classifications = []
     target_classifications = df_test['label'].tolist()
@@ -146,4 +150,5 @@ def run_BoWClassifier(full_vocab, human_vocab, ai_generated_vocab, df_train, df_
     print_all_metrics(target_classifications, predicted_classifications)
 
 full_vocab, human_vocab, ai_generated_vocab, df_train, df_test = get_data2()
-run_BoWClassifier(full_vocab, human_vocab, ai_generated_vocab, df_train, df_test)
+classifier, ai_generated_prior, human_prior = get_model(full_vocab, human_vocab, ai_generated_vocab, df_train)
+test_model(classifier, human_prior, ai_generated_prior, df_test)
