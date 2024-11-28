@@ -147,7 +147,9 @@ def test_model(classifier, human_prior, ai_generated_prior, df_test):
                                                                               ai_generated_prior)
         predicted_classifications.append(predicted_classification)
 
-    print_all_metrics(target_classifications, predicted_classifications)
+    metrics = print_all_metrics(target_classifications, predicted_classifications)
+
+    return metrics
 
 full_vocab, human_vocab, ai_generated_vocab, df_train, df_test = get_data2()
 classifier, ai_generated_prior, human_prior = get_model(full_vocab, human_vocab, ai_generated_vocab, df_train)
