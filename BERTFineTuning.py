@@ -75,10 +75,12 @@ class BERTFineTuning:
 
                 # Forward pass
                 outputs = self.model(input_ids, attention_mask=attention_mask)
-                last_hidden_states = outputs.last_hidden_state
+
+                # Access logits directly, no need to use last_hidden_state
+                logits = outputs.logits
 
                 # Ensure logits are float32
-                logits = last_hidden_states[:, 0, :].float()  # Convert to float32
+                logits = logits.float()  # Convert to float32
 
                 # Ensure labels are long (int64)
                 labels = labels.to(torch.long)  # Ensure labels are long
@@ -152,7 +154,7 @@ def get_BERT_model(df_train, batch_size_val):
 
 
 _, _, _, df_train, df_test = data_collection.get_data2()
-train_size = 1000
+train_size = 100
 test_size = int(train_size * 0.2)
 df_train = df_train.sample(n=train_size, random_state=42)
 df_test = df_test.sample(n=test_size, random_state=42)
