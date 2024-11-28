@@ -8,7 +8,7 @@ AI_GENERATED = 1
 HUMAN = 0
 
 def get_data1():
-    ai_generated_df = convert_text_files_to_df("./data/ai_generated", AI_GENERATED)
+    ai_generated_df = convert_text_files_to_df("./data/chatgpt", AI_GENERATED)
     human_df = convert_text_files_to_df("./data/human", HUMAN)
 
     df_overall = pd.concat([ai_generated_df, human_df], ignore_index=True)
