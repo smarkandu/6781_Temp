@@ -127,9 +127,9 @@ class BERTFineTuning:
                 labels_list.extend(labels.cpu().numpy())
 
         # Print all performance Metrics observed
-        metrics = print_all_metrics(labels_list, predictions_list)
+        basic_metrics, adv_metrics = print_all_metrics(labels_list, predictions_list)
 
-        return metrics, predictions_list, labels_list
+        return basic_metrics, adv_metrics, predictions_list, labels_list
 
 
 def get_BERT_model(df_train, batch_size_val):
