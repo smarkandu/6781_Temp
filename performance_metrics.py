@@ -13,3 +13,5 @@ def print_all_metrics(target_classifications, predicted_classifications):
     # Calculate accuracy, precision, recall, and F1-score
     report = classification_report(target_classifications, predicted_classifications)
     print("Classification Report:\n", report)
+
+    return [tp, tn, fp, fn]
