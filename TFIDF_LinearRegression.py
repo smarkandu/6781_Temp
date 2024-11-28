@@ -140,7 +140,7 @@ documents = [
 ]
 y = np.array([1, 0, 1, 0])  # Dummy target for demonstration
 
-full_vocab, human_vocab, chatgpt_vocab, df_train, df_test = get_data2()
+full_vocab, human_vocab, ai_generated_vocab, df_train, df_test = get_data2()
 
 # Instantiate the model
 model = TFIDFLinearRegression()
