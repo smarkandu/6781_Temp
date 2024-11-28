@@ -141,8 +141,8 @@ class BERTFineTuning:
         print(f'Logistic Regression Accuracy Score: {score}')
 
 
-def run_BERT(df_train, df_test):
-    bert_finetuning = BERTFineTuning(model_name='distilbert-base-uncased', epochs=3, lr=1e-5)
+def run_BERT(df_train, df_test, batch_size_val=16):
+    bert_finetuning = BERTFineTuning(model_name='distilbert-base-uncased', epochs=3, lr=1e-5, batch_size=batch_size_val)
 
     # Load data
     # _, _, _, df_train, df_test = get_data2()
@@ -164,4 +164,4 @@ def run_BERT(df_train, df_test):
 _, _, _, df_train, df_test = data_collection.get_data2()
 df_train = df_train.sample(n=1000, random_state=42)
 df_test = df_test.sample(n=200, random_state=42)
-run_BERT(df_train, df_test)
+run_BERT(df_train, df_test, 8)
