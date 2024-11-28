@@ -152,3 +152,6 @@ def test_model(classifier, human_prior, ai_generated_prior, df_test):
 full_vocab, human_vocab, ai_generated_vocab, df_train, df_test = get_data2()
 classifier, ai_generated_prior, human_prior = get_model(full_vocab, human_vocab, ai_generated_vocab, df_train)
 test_model(classifier, human_prior, ai_generated_prior, df_test)
+
+_, _, _, _, df_test1 = get_data1()
+test_model(classifier, human_prior, ai_generated_prior, df_test1)
