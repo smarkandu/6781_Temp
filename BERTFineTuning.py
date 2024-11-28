@@ -4,7 +4,7 @@ from torch import nn, optim
 import transformers as ppb
 import data_collection
 from torch.utils.data import DataLoader, TensorDataset
-
+import torch.nn.functional as F
 from performance_metrics import print_all_metrics
 
 
@@ -108,13 +108,20 @@ class BERTFineTuning:
         test_dataloader = DataLoader(dataset, batch_size=self.batch_size, shuffle=False)
 
         self.model.eval() # Put model in test mode
-        predictions_list, labels_list = [], []
+        predictions_list, labels_list, probabilities_list = [], [], []
         with torch.no_grad():
             # Run through each batch of test data
             for batch in test_dataloader:
                 input_ids, attention_mask, labels = batch
                 outputs = self.model(input_ids, attention_mask=attention_mask)
                 logits = outputs.logits
+                # Compute probabilities using softmax
+                probabilities = F.softmax(logits, dim=1).cpu().numpy()
+                # Get predicted class probabilities for the positive class (i.e. 1)
+                positive_class_probs = probabilities[:, 1]
+                # Store probabilities for ROC computation
+                probabilities_list.extend(positive_class_probs)
+                # Get predicted labels
                 predictions = torch.argmax(logits, dim=1).cpu().numpy()
                 predictions_list.extend(predictions)
                 labels_list.extend(labels.cpu().numpy())
@@ -122,6 +129,7 @@ class BERTFineTuning:
         # Print all performance Metrics observed
         print_all_metrics(labels_list, predictions_list)
 
+        return probabilities_list, predictions_list
 
 
 def get_BERT_model(df_train, batch_size_val):
