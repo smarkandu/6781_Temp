@@ -13,7 +13,7 @@ class BERTFineTuning:
         self.model_name = model_name
         self.epochs = epochs
         self.lr = lr
-        self.batch_size = batch_size  # Add batch_size parameter
+        self.batch_size = batch_size
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.tokenizer = None
         self.model = None
@@ -22,116 +22,106 @@ class BERTFineTuning:
         self.dataloader = None
 
     def load_data(self, df_train):
+        """
+        We insert our training data using this method
+        :param df_train: Pandas dataframe for training data
+        :return: Modified pandas dataframe for training data
+        """
         self.df_train = df_train
         self.df_train.columns = [0, 1]
         return df_train
 
     def initialize_model(self):
-        model_class, tokenizer_class, pretrained_weights = (
-            DistilBertForSequenceClassification, ppb.DistilBertTokenizer, 'distilbert-base-uncased'
-        )
-
+        """
+        Initialize Data Members of object
+        :return: None
+        """
         if self.model_name == 'bert-base-uncased':
             model_class, tokenizer_class, pretrained_weights = (
                 BertForSequenceClassification, ppb.BertTokenizer, 'bert-base-uncased')
+        else:
+            model_class, tokenizer_class, pretrained_weights = (
+                DistilBertForSequenceClassification, ppb.DistilBertTokenizer, 'distilbert-base-uncased')
 
+        # Set up tokenizer and model using pre-trained weights
         self.tokenizer = tokenizer_class.from_pretrained(pretrained_weights)
-        self.model = model_class.from_pretrained(pretrained_weights, num_labels=2).to(
-            self.device)  # Specify num_labels for classification
-        self.model.train()
+        self.model = model_class.from_pretrained(pretrained_weights, num_labels=2).to(self.device)
+        self.model.train()  # Put model in training mode
 
-        # Optimizer and loss function
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.lr)
         self.loss_fn = nn.CrossEntropyLoss()
 
     def preprocess_data(self):
-        # Tokenize the data
+        """
+        We tokenize and pad our data here.  We also create the attention mask, dataset and dataloader
+        :return: None
+        """
         tokenized = self.df_train[0].apply(lambda x: self.tokenizer.encode(x, add_special_tokens=True, truncation=True))
-
-        # Find the maximum sequence length
         max_len = max([len(x) for x in tokenized])
 
-        # Pad sequences to the same length
         padded = torch.tensor([i + [0] * (max_len - len(i)) for i in tokenized], device=self.device)
-
-        # Create attention mask
         attention_mask = (padded != 0).long().to(self.device)
-
-        # Create labels tensor
         labels = torch.tensor(self.df_train[1].values, dtype=torch.long, device=self.device)
 
-        # Create a dataset and DataLoader
         dataset = TensorDataset(padded, attention_mask, labels)
         self.dataloader = DataLoader(dataset, batch_size=self.batch_size, shuffle=True)
 
     def fine_tune_model(self):
+        """
+        Fine-Tune our model by training on a few epochs of our training data for our downstream task (classification)
+        :return: None
+        """
         for epoch in range(self.epochs):
             epoch_loss = 0
             for batch in self.dataloader:
                 input_ids, attention_mask, labels = batch
 
-                # Zero the gradients
-                self.optimizer.zero_grad()
-
-                # Forward pass
+                self.optimizer.zero_grad()  # Zero the gradients
                 outputs = self.model(input_ids, attention_mask=attention_mask)
-
-                # Access logits directly, no need to use last_hidden_state
                 logits = outputs.logits
 
-                # Ensure logits are float32
-                logits = logits.float()  # Convert to float32
-
-                # Ensure labels are long (int64)
-                labels = labels.to(torch.long)  # Ensure labels are long
-
-                # Compute the loss
+                # Compute loss
+                labels = labels.to(torch.long)
                 loss = self.loss_fn(logits, labels)
                 epoch_loss += loss.item()
 
-                # Backward pass
+                # Perform the backwards pass
                 loss.backward()
-
-                # Update weights
                 self.optimizer.step()
 
             print(f"Epoch {epoch + 1}/{self.epochs}, Loss: {epoch_loss:.4f}")
 
     def evaluate_model(self, df_test):
-        # Process the test data
-        df_test.columns = [0, 1]
+        df_test.columns = [0, 1]  # Set Column Names
         tokenized = df_test[0].apply(lambda x: self.tokenizer.encode(x, add_special_tokens=True, truncation=True))
+        max_len = max([len(x) for x in tokenized]) # Obtain the max size of a 'text' encoding
 
-        # Find the maximum sequence length
-        max_len = max([len(x) for x in tokenized])
-
-        # Pad sequences to the same length
+        # Add padding to the tokenized 'text' sequences
+        # Create the attention mask in order for the model to know which tokens to pay attention to
+        # (i.e. real tokens vs padding)
         padded = torch.tensor([i + [0] * (max_len - len(i)) for i in tokenized], device=self.device)
-
-        # Create attention mask
         attention_mask = (padded != 0).long().to(self.device)
-
-        # Create labels tensor
         labels = torch.tensor(df_test[1].values, dtype=torch.long, device=self.device)
 
-        # Create a dataset and DataLoader for test data
+        # Create Dataset and Data Loader for test data
         dataset = TensorDataset(padded, attention_mask, labels)
         test_dataloader = DataLoader(dataset, batch_size=self.batch_size, shuffle=False)
 
-        # Evaluate the model
-        self.model.eval()
+        self.model.eval() # Put model in test mode
         predictions_list, labels_list = [], []
         with torch.no_grad():
+            # Run through each batch of test data
             for batch in test_dataloader:
                 input_ids, attention_mask, labels = batch
                 outputs = self.model(input_ids, attention_mask=attention_mask)
-                logits = outputs.logits  # Access logits for classification
+                logits = outputs.logits
                 predictions = torch.argmax(logits, dim=1).cpu().numpy()
                 predictions_list.extend(predictions)
                 labels_list.extend(labels.cpu().numpy())
 
-        # Print Metrics
+        # Print all performance Metrics observed
         print_all_metrics(labels_list, predictions_list)
+
 
 
 def get_BERT_model(df_train, batch_size_val):
