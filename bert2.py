@@ -13,7 +13,7 @@ from data_collection import get_data2
 
 warnings.filterwarnings('ignore')
 
-full_vocab, human_vocab, chatgpt_vocab, df_train, df_test = get_data2()
+full_vocab, human_vocab, ai_generated_vocab, df_train, df_test = get_data2()
 
 # Combine datasets into a single DataFrame
 df_train.columns = [0, 1]
