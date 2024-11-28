@@ -8,6 +8,15 @@ AI_GENERATED = 1
 HUMAN = 0
 
 def get_data1():
+    """
+    Obtain the given dataset (1 of 2)
+
+    Data Obtained from
+    https://github.com/rexshijaku/chatgpt-generated-text-detection-corpus?tab=readme-ov-file
+    (Included in this Project)
+
+    :return: full_vocab, ai_generated_vocab, human_vocab, df_train, df_test
+    """
     ai_generated_df = convert_text_files_to_df("./data/chatgpt", AI_GENERATED)
     human_df = convert_text_files_to_df("./data/human", HUMAN)
 
@@ -26,6 +35,14 @@ def get_data1():
 
 
 def get_data2():
+    """
+    Obtain the given dataset (2 of 2)
+
+    Data Obtained from
+    https://www.kaggle.com/code/syedali110/ai-generated-vs-human-text-95-accuracy/input?select=AI_Human.csv
+    It MUST be downloaded and inserted in the following path (not included due to size)
+    :return: full_vocab, ai_generated_vocab, human_vocab, df_train, df_test
+    """
     df_overall = pd.read_csv('./data2/AI_Human.csv', on_bad_lines='skip', encoding='utf-8')
     df_overall.columns = ['text', 'label']
 
