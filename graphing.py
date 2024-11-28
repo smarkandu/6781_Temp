@@ -25,7 +25,7 @@ def get_dataset_histogram(data_df, graph_title):
 
     # Set custom x-axis labels to show 'Human' and 'AI'
     ax.set_xticks([0, 1])
-    ax.set_xticklabels(['Human', 'AI'])
+    ax.set_xticklabels(['Human test', 'AI'])
 
     # Add titles and labels
     plt.title(graph_title)
