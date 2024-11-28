@@ -8,6 +8,8 @@ import data_collection
 from sklearn.metrics import classification_report, confusion_matrix
 from torch.utils.data import DataLoader, TensorDataset
 
+from performance_metrics import print_all_metrics
+
 
 class BERTFineTuning:
     def __init__(self, model_name='distilbert-base-uncased', epochs=3, lr=1e-5, batch_size=16):
@@ -123,18 +125,8 @@ class BERTFineTuning:
         # Predict on the test features
         predictions = lr_clf.predict(test_features)
 
-        # Calculate confusion matrix
-        tn, fp, fn, tp = confusion_matrix(test_labels, predictions).ravel()
-
-        # Print metrics
-        print(f"True Positives (TP): {tp}")
-        print(f"True Negatives (TN): {tn}")
-        print(f"False Positives (FP): {fp}")
-        print(f"False Negatives (FN): {fn}")
-
-        # Calculate accuracy, precision, recall, and F1-score
-        report = classification_report(test_labels, predictions)
-        print("Classification Report:\n", report)
+        # Print Metrics
+        print_all_metrics(test_labels, predictions)
 
         # Evaluate overall logistic regression score
         score = lr_clf.score(test_features, test_labels)
