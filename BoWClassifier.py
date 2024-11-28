@@ -126,9 +126,7 @@ class BoWClassifier:
         return predicted_class, classification_scores
 
 
-if __name__ == '__main__':
-    full_vocab, human_vocab, ai_generated_vocab, df_train, df_test = get_data2()
-
+def run_BoWClassifier(full_vocab, human_vocab, ai_generated_vocab, df_train, df_test):
     classifier = BoWClassifier(smoothing_factor=0.2)
 
     # Train the model with vocabularies for human and ai_generated reviews
@@ -146,3 +144,6 @@ if __name__ == '__main__':
         predicted_classifications.append(predicted_classification)
 
     print_all_metrics(target_classifications, predicted_classifications)
+
+full_vocab, human_vocab, ai_generated_vocab, df_train, df_test = get_data2()
+run_BoWClassifier(full_vocab, human_vocab, ai_generated_vocab, df_train, df_test)
