@@ -1,11 +1,8 @@
-import numpy as np
 import torch
-from sklearn.model_selection import train_test_split
-from sklearn.linear_model import LogisticRegression
+from transformers import DistilBertForSequenceClassification, BertForSequenceClassification
 from torch import nn, optim
 import transformers as ppb
 import data_collection
-from sklearn.metrics import classification_report, confusion_matrix
 from torch.utils.data import DataLoader, TensorDataset
 
 from performance_metrics import print_all_metrics
@@ -31,14 +28,16 @@ class BERTFineTuning:
 
     def initialize_model(self):
         model_class, tokenizer_class, pretrained_weights = (
-            ppb.DistilBertModel, ppb.DistilBertTokenizer, 'distilbert-base-uncased'
+            DistilBertForSequenceClassification, ppb.DistilBertTokenizer, 'distilbert-base-uncased'
         )
 
         if self.model_name == 'bert-base-uncased':
-            model_class, tokenizer_class, pretrained_weights = (ppb.BertModel, ppb.BertTokenizer, 'bert-base-uncased')
+            model_class, tokenizer_class, pretrained_weights = (
+                BertForSequenceClassification, ppb.BertTokenizer, 'bert-base-uncased')
 
         self.tokenizer = tokenizer_class.from_pretrained(pretrained_weights)
-        self.model = model_class.from_pretrained(pretrained_weights).to(self.device)  # Move model to GPU
+        self.model = model_class.from_pretrained(pretrained_weights, num_labels=2).to(
+            self.device)  # Specify num_labels for classification
         self.model.train()
 
         # Optimizer and loss function
@@ -124,14 +123,13 @@ class BERTFineTuning:
             for batch in test_dataloader:
                 input_ids, attention_mask, labels = batch
                 outputs = self.model(input_ids, attention_mask=attention_mask)
-                logits = outputs.logits
+                logits = outputs.logits  # Access logits for classification
                 predictions = torch.argmax(logits, dim=1).cpu().numpy()
                 predictions_list.extend(predictions)
                 labels_list.extend(labels.cpu().numpy())
 
         # Print Metrics
         print_all_metrics(labels_list, predictions_list)
-        print(f"Confusion Matrix:\n{confusion_matrix(labels_list, predictions_list)}")
 
 
 def get_BERT_model(df_train, batch_size_val):
@@ -155,7 +153,7 @@ def get_BERT_model(df_train, batch_size_val):
 
 _, _, _, df_train, df_test = data_collection.get_data2()
 train_size = 1000
-test_size = int(train_size*0.2)
+test_size = int(train_size * 0.2)
 df_train = df_train.sample(n=train_size, random_state=42)
 df_test = df_test.sample(n=test_size, random_state=42)
 bert_model = get_BERT_model(df_train, 8)
