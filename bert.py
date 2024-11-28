@@ -8,11 +8,11 @@ import pandas as pd
 from utils import convert_text_files_to_df
 
 # Load dataset
-chatgpt_df = convert_text_files_to_df("./data/chatgpt", 0)
+ai_generated_df = convert_text_files_to_df("./data/ai_generated", 0)
 human_df = convert_text_files_to_df("./data/human", 1)
 
 # Combine datasets into a single DataFrame
-df_complete = pd.concat([chatgpt_df, human_df], ignore_index=True)
+df_complete = pd.concat([ai_generated_df, human_df], ignore_index=True)
 
 # Verify columns are named correctly
 df_complete.rename(columns={"your_text_column": "text", "your_label_column": "label"}, inplace=True)
