@@ -3,6 +3,7 @@ import torch.nn as nn
 import os
 from tqdm import tqdm
 
+from data_collection import get_data1
 from utils import load_at_checkpoint, save_at_checkpoint, word_to_index
 
 
@@ -67,5 +68,7 @@ def train_CBOW(word_to_index_dict, train_dataloader):
 
     return model
 
-# word_to_index_dict = word_to_index(vocabulary)
-# model = train_CBOW
+
+full_vocab, _, _ = get_data1()
+word_to_index_dict = word_to_index(full_vocab)
+model = train_CBOW(word_to_index_dict)
