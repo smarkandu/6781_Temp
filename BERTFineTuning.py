@@ -24,12 +24,10 @@ class BERTFineTuning:
         self.loss_fn = None
         self.dataloader = None
 
-    def load_data(self, df_train, df_test):
+    def load_data(self, df_train):
         self.df_train = df_train
-        self.df_test = df_test
         self.df_train.columns = [0, 1]
-        self.df_test.columns = [0, 1]
-        return df_train, df_test
+        return df_train
 
     def initialize_model(self):
         model_class, tokenizer_class, pretrained_weights = (
@@ -98,47 +96,50 @@ class BERTFineTuning:
 
             print(f"Epoch {epoch + 1}/{self.epochs}, Loss: {epoch_loss:.4f}")
 
-    def evaluate_model(self):
-        # Extract features after fine-tuning
-        self.model.eval()
-        features_list, labels_list = [], []
+    def evaluate_model(self, df_test):
+        # Process the test data
+        df_test.columns = [0, 1]
+        tokenized = df_test[0].apply(lambda x: self.tokenizer.encode(x, add_special_tokens=True, truncation=True))
 
+        # Find the maximum sequence length
+        max_len = max([len(x) for x in tokenized])
+
+        # Pad sequences to the same length
+        padded = torch.tensor([i + [0] * (max_len - len(i)) for i in tokenized], device=self.device)
+
+        # Create attention mask
+        attention_mask = (padded != 0).long().to(self.device)
+
+        # Create labels tensor
+        labels = torch.tensor(df_test[1].values, dtype=torch.long, device=self.device)
+
+        # Create a dataset and DataLoader for test data
+        dataset = TensorDataset(padded, attention_mask, labels)
+        test_dataloader = DataLoader(dataset, batch_size=self.batch_size, shuffle=False)
+
+        # Evaluate the model
+        self.model.eval()
+        predictions_list, labels_list = [], []
         with torch.no_grad():
-            for batch in self.dataloader:
+            for batch in test_dataloader:
                 input_ids, attention_mask, labels = batch
                 outputs = self.model(input_ids, attention_mask=attention_mask)
-                last_hidden_states = outputs.last_hidden_state
-                features = last_hidden_states[:, 0, :].cpu().numpy()
-                features_list.extend(features)
+                logits = outputs.logits
+                predictions = torch.argmax(logits, dim=1).cpu().numpy()
+                predictions_list.extend(predictions)
                 labels_list.extend(labels.cpu().numpy())
 
-        features = np.array(features_list)
-        labels = np.array(labels_list)
-
-        # Prepare data for classification
-        train_features, test_features, train_labels, test_labels = train_test_split(features, labels, test_size=0.2)
-
-        # Train a Logistic Regression classifier on the features
-        lr_clf = LogisticRegression()
-        lr_clf.fit(train_features, train_labels)
-
-        # Predict on the test features
-        predictions = lr_clf.predict(test_features)
-
         # Print Metrics
-        print_all_metrics(test_labels, predictions)
-
-        # Evaluate overall logistic regression score
-        score = lr_clf.score(test_features, test_labels)
-        print(f'Logistic Regression Accuracy Score: {score}')
+        print_all_metrics(labels_list, predictions_list)
+        print(f"Confusion Matrix:\n{confusion_matrix(labels_list, predictions_list)}")
 
 
-def run_BERT(df_train, df_test, batch_size_val):
+def get_BERT_model(df_train, batch_size_val):
     bert_finetuning = BERTFineTuning(model_name='distilbert-base-uncased', epochs=3, lr=1e-5, batch_size=batch_size_val)
 
     # Load data
     # _, _, _, df_train, df_test = get_data2()
-    bert_finetuning.load_data(df_train, df_test)
+    bert_finetuning.load_data(df_train)
 
     # Initialize model
     bert_finetuning.initialize_model()
@@ -149,11 +150,14 @@ def run_BERT(df_train, df_test, batch_size_val):
     # Fine-tune the BERT model
     bert_finetuning.fine_tune_model()
 
-    # Evaluate the model
-    bert_finetuning.evaluate_model()
+    return bert_finetuning
 
 
 _, _, _, df_train, df_test = data_collection.get_data2()
-df_train = df_train.sample(n=1000, random_state=42)
-df_test = df_test.sample(n=200, random_state=42)
-run_BERT(df_train, df_test, 8)
+train_size = 1000
+test_size = int(train_size*0.2)
+df_train = df_train.sample(n=train_size, random_state=42)
+df_test = df_test.sample(n=test_size, random_state=42)
+bert_model = get_BERT_model(df_train, 8)
+
+bert_model.evaluate_model(df_test)
