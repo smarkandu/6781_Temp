@@ -21,7 +21,7 @@ class RoBERTaFineTuning:
 
     def load_data(self, df_train):
         """
-        Load training data.
+        We insert our training data using this method
         :param df_train: Pandas dataframe for training data
         """
         self.df_train = df_train
@@ -29,7 +29,8 @@ class RoBERTaFineTuning:
 
     def initialize_model(self):
         """
-        Initialize tokenizer, model, optimizer, and loss function.
+        Initialize Data Members of object
+        :return: None
         """
         self.tokenizer = RobertaTokenizer.from_pretrained(self.model_name)
         self.model = RobertaForSequenceClassification.from_pretrained(self.model_name, num_labels=2).to(self.device)
@@ -40,7 +41,8 @@ class RoBERTaFineTuning:
 
     def preprocess_data(self):
         """
-        Tokenize and preprocess training data.
+        We tokenize and pad our data here.  We also create the attention mask, dataset and dataloader
+        :return: None
         """
         tokenized = self.df_train[0].apply(
             lambda x: self.tokenizer.encode(x, add_special_tokens=True, truncation=True, max_length=512)
@@ -56,7 +58,8 @@ class RoBERTaFineTuning:
 
     def fine_tune_model(self):
         """
-        Fine-tune the RoBERTa model.
+        Fine-Tune our model by training on a few epochs of our training data for our downstream task (classification)
+        :return: None
         """
         for epoch in range(self.epochs):
             epoch_loss = 0
@@ -77,7 +80,7 @@ class RoBERTaFineTuning:
 
     def evaluate_model(self, df_test):
         """
-        Evaluate the fine-tuned RoBERTa model on the test dataset.
+        Evaluate the fine-tuned RoBERTa model with a given test dataset.
         """
         df_test.columns = [0, 1]
         tokenized = df_test[0].apply(
