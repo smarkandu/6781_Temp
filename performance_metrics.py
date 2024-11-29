@@ -11,8 +11,8 @@ def print_all_metrics(target_classifications, predicted_classifications):
     print(f"False Negatives (FN): {fn}")
 
     # Calculate accuracy, precision, recall, and F1-score
-    report = classification_report(target_classifications, predicted_classifications)
-    dict_metrics = classification_report(target_classifications, predicted_classifications, output_dict=True)
+    report = classification_report(target_classifications, predicted_classifications, digits=4)
+    dict_metrics = classification_report(target_classifications, predicted_classifications, digits=4, output_dict=True)
     adv_metrics = [dict_metrics["accuracy"], dict_metrics["weighted avg"]["precision"],
                    dict_metrics["weighted avg"]["recall"], dict_metrics["weighted avg"]["f1-score"]]
 
