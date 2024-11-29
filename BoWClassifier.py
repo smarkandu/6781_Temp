@@ -149,7 +149,9 @@ def test_model(classifier, human_prior, ai_generated_prior, df_test):
 
     return basic_metrics, adv_metrics
 
-# full_vocab, human_vocab, ai_generated_vocab, df_train, df_test = get_data_primary(data_collection.get_overall_data_primary())
+# sample_size = 1000
+# df_primary = data_collection.get_overall_data_primary().sample(n=sample_size, random_state=42)
+# full_vocab, human_vocab, ai_generated_vocab, df_train, df_test = get_data_primary(df_primary)
 # classifier, ai_generated_prior, human_prior = get_model(full_vocab, human_vocab, ai_generated_vocab, df_train)
 # test_model(classifier, human_prior, ai_generated_prior, df_test)
 #
