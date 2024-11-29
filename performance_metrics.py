@@ -13,8 +13,8 @@ def print_all_metrics(target_classifications, predicted_classifications):
     # Calculate accuracy, precision, recall, and F1-score
     report = classification_report(target_classifications, predicted_classifications, digits=4)
     dict_metrics = classification_report(target_classifications, predicted_classifications, digits=4, output_dict=True)
-    # print(dict_metrics.keys())
-    adv_metrics = [dict_metrics["accuracy"], dict_metrics['1.0']["precision"],
+    print(dict_metrics.keys())
+    adv_metrics = [dict_metrics["accuracy"], dict_metrics["1.0"]["precision"],
                    dict_metrics['1.0']["recall"], dict_metrics['1.0']["f1-score"]]
 
     print("Classification Report:\n", report)
