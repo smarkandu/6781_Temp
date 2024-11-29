@@ -6,8 +6,8 @@ def print_all_metrics(target_classifications, predicted_classifications):
 
     # Print metrics
     print(f"True Positives (TP): {tp}")
-    print(f"True Negatives (TN): {tn}")
     print(f"False Positives (FP): {fp}")
+    print(f"True Negatives (TN): {tn}")
     print(f"False Negatives (FN): {fn}")
 
     # Calculate accuracy, precision, recall, and F1-score
