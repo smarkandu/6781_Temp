@@ -92,6 +92,9 @@ class BERTFineTuning:
             print(f"Epoch {epoch + 1}/{self.epochs}, Loss: {epoch_loss:.4f}")
 
     def evaluate_model(self, df_test):
+        """
+        Evaluate the fine-tuned RoBERTa model with a given test dataset.
+        """
         df_test.columns = [0, 1]  # Set Column Names
         tokenized = df_test[0].apply(lambda x: self.tokenizer.encode(x, add_special_tokens=True, truncation=True))
         max_len = max([len(x) for x in tokenized]) # Obtain the max size of a 'text' encoding
