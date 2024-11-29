@@ -8,7 +8,7 @@ AI_GENERATED = 1
 HUMAN = 0
 
 
-def get_overall_data1():
+def get_overall_data_secondary():
     ai_generated_df = convert_text_files_to_df("./data/chatgpt", AI_GENERATED)
     human_df = convert_text_files_to_df("./data/human", HUMAN)
 
@@ -17,7 +17,7 @@ def get_overall_data1():
     return df_overall
 
 
-def get_data1():
+def get_data_secondary():
     """
     Obtain the given dataset (1 of 2)
 
@@ -41,14 +41,14 @@ def get_data1():
     return full_vocab, ai_generated_vocab, human_vocab, df_train, df_test
 
 
-def get_overall_data2():
+def get_overall_data_primary():
     df_overall = pd.read_csv('./data2/AI_Human.csv', on_bad_lines='skip', encoding='utf-8')
     df_overall.columns = ['text', 'label']
 
     return df_overall
 
 
-def get_data2():
+def get_data_primary():
     """
     Obtain the given dataset (2 of 2)
 
