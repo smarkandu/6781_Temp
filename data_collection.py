@@ -27,7 +27,7 @@ def get_data_secondary():
 
     :return: full_vocab, ai_generated_vocab, human_vocab, df_train, df_test
     """
-    df_overall = get_overall_data1()
+    df_overall = get_overall_data_secondary()
 
     df_train, df_test = train_test_split(df_overall, test_size=0.2, random_state=42)
 
@@ -57,7 +57,7 @@ def get_data_primary():
     It MUST be downloaded and inserted in the following path (not included due to size)
     :return: full_vocab, ai_generated_vocab, human_vocab, df_train, df_test
     """
-    df_overall = get_overall_data2()
+    df_overall = get_overall_data_primary()
 
     df_train, df_test = train_test_split(df_overall, test_size=0.2, random_state=42)
 
