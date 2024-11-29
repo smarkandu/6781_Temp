@@ -120,7 +120,7 @@ def get_RoBERTa_model(df_train, batch_size_val):
 
 
 # Example usage:
-_, _, _, df_train, df_test = data_collection.get_data2()
+_, _, _, df_train, df_test = data_collection.get_data_primary()
 train_size = 100
 test_size = int(train_size * 0.2)
 df_train = df_train.sample(n=train_size, random_state=42)
