@@ -136,7 +136,6 @@ def get_BERT_model(df_train, batch_size_val):
     bert_finetuning = BERTFineTuning(model_name='distilbert-base-uncased', epochs=3, lr=1e-5, batch_size=batch_size_val)
 
     # Load data
-    # _, _, _, df_train, df_test = get_data2()
     bert_finetuning.load_data(df_train)
 
     # Initialize model
@@ -151,7 +150,7 @@ def get_BERT_model(df_train, batch_size_val):
     return bert_finetuning
 
 
-_, _, _, df_train, df_test = data_collection.get_data2()
+_, _, _, df_train, df_test = data_collection.get_data_primary()
 train_size = 100
 test_size = int(train_size * 0.2)
 df_train = df_train.sample(n=train_size, random_state=42)
