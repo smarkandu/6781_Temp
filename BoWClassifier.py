@@ -1,6 +1,7 @@
 import math
 from collections import defaultdict
 
+import data_collection
 from data_collection import get_data_primary, get_data_secondary, AI_GENERATED, HUMAN
 from performance_metrics import print_all_metrics
 from utils import preprocess_text
@@ -148,9 +149,9 @@ def test_model(classifier, human_prior, ai_generated_prior, df_test):
 
     return basic_metrics, adv_metrics
 
-full_vocab, human_vocab, ai_generated_vocab, df_train, df_test = get_data_primary()
-classifier, ai_generated_prior, human_prior = get_model(full_vocab, human_vocab, ai_generated_vocab, df_train)
-test_model(classifier, human_prior, ai_generated_prior, df_test)
-
-_, _, _, _, df_test1 = get_data_secondary()
-test_model(classifier, human_prior, ai_generated_prior, df_test1)
+# full_vocab, human_vocab, ai_generated_vocab, df_train, df_test = get_data_primary(data_collection.get_overall_data_primary())
+# classifier, ai_generated_prior, human_prior = get_model(full_vocab, human_vocab, ai_generated_vocab, df_train)
+# test_model(classifier, human_prior, ai_generated_prior, df_test)
+#
+# _, _, _, _, df_test1 = get_data_secondary(data_collection.get_overall_data_secondary())
+# test_model(classifier, human_prior, ai_generated_prior, df_test1)
