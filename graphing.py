@@ -36,7 +36,7 @@ def get_dataset_histogram(data_df, graph_title):
     plt.show()
 
 
-def get_bar_graph(model1_val, model2_val, model3_val, metrics, title):
+def get_bar_graph_matrix_ocmponents(model1_val, model2_val, model3_val, metrics, title):
     import matplotlib.pyplot as plt
     import numpy as np
 
@@ -71,5 +71,42 @@ def get_bar_graph(model1_val, model2_val, model3_val, metrics, title):
             ax.text(rect.get_x() + rect.get_width() / 2., height + 1, f'{int(height)}', ha='center', va='bottom')
 
     # Display the plot
+    plt.tight_layout()
+    plt.show()
+
+
+def get_bar_graph_adv_metrics(model1_val, model2_val, model3_val, metrics, title):
+    import matplotlib.pyplot as plt
+    import numpy as np
+
+    # Bar chart settings
+    x = np.arange(len(metrics))  # the label locations
+    width = 0.2  # the width of the bars
+
+    fig, ax = plt.subplots(figsize=(10, 6))
+
+    # Plotting the bars for each model
+    rects1 = ax.bar(x - width, model1_val, width, label='Bag of Words', color='blue')
+    rects2 = ax.bar(x, model2_val, width, label='DistilBERT', color='green')
+    rects3 = ax.bar(x + width, model3_val, width, label='RoBERTa', color='red')
+
+    # Adding labels, title, and custom x-axis tick labels
+    ax.set_xlabel('Metrics')
+    ax.set_ylabel('Metric Values')
+    ax.set_title(title)
+    ax.set_xticks(x)
+    ax.set_xticklabels(metrics, rotation=45, ha='right')  # Rotate labels for better readability
+    ax.legend()
+
+    # Adding data labels on top of each bar (use float formatting for decimals)
+    for rects in [rects1, rects2, rects3]:
+        for rect in rects:
+            height = rect.get_height()
+            ax.text(rect.get_x() + rect.get_width() / 2.,
+                    height + 0.01,  # Adjust text positioning for small heights
+                    f'{height:.2f}',  # Format height as a float with 2 decimal places
+                    ha='center', va='bottom')
+
+    # Apply a tight layout to adjust the spacing
     plt.tight_layout()
     plt.show()
