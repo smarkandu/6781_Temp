@@ -1,7 +1,7 @@
 import math
 from collections import defaultdict
 
-from data_collection import get_data_primary, get_data_secondary
+from data_collection import get_data_primary, get_data_secondary, AI_GENERATED, HUMAN
 from performance_metrics import print_all_metrics
 from utils import preprocess_text
 
