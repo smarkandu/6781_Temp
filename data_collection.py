@@ -17,7 +17,7 @@ def get_overall_data_secondary():
     return df_overall
 
 
-def get_data_secondary():
+def get_data_secondary(df_to_split):
     """
     Obtain the given dataset (1 of 2)
 
@@ -27,9 +27,7 @@ def get_data_secondary():
 
     :return: full_vocab, ai_generated_vocab, human_vocab, df_train, df_test
     """
-    df_overall = get_overall_data_secondary()
-
-    df_train, df_test = train_test_split(df_overall, test_size=0.2, random_state=42)
+    df_train, df_test = train_test_split(df_to_split, test_size=0.2, random_state=42)
 
     full_vocab = vocab_dictionary(df_train)
     # print(len(full_vocab))
@@ -48,7 +46,7 @@ def get_overall_data_primary():
     return df_overall
 
 
-def get_data_primary():
+def get_data_primary(df_to_split):
     """
     Obtain the given dataset (2 of 2)
 
@@ -57,9 +55,7 @@ def get_data_primary():
     It MUST be downloaded and inserted in the following path (not included due to size)
     :return: full_vocab, ai_generated_vocab, human_vocab, df_train, df_test
     """
-    df_overall = get_overall_data_primary()
-
-    df_train, df_test = train_test_split(df_overall, test_size=0.2, random_state=42)
+    df_train, df_test = train_test_split(df_to_split, test_size=0.2, random_state=42)
 
     full_vocab = vocab_dictionary(df_train)
     # print(len(full_vocab))
